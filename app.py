@@ -87,7 +87,6 @@ def tobs():
     session = Session(engine)
     temperature = session.query(Measurement.station,Measurement.date,Measurement.tobs).filter(Measurement.date >= '2016-08-23').order_by(Measurement.date)
 
-    # close the session to end the communication with the database
     session.close()
 
     temperature_list = []
@@ -133,7 +132,6 @@ def startend(start=None, end=None):
     session = Session(engine)
     results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()
 
-    # close the session to end the communication with the database
     session.close()
 
     list = []
