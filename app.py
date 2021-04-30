@@ -85,7 +85,7 @@ def tobs():
     #Return a JSON list of temperature observations (TOBS) for the previous year.
     # Query all Measurement table
     session = Session(engine)
-    temperature = session.query(Measurement.station,Measurement.date,Measurement.tobs).filter(Measurement.date >= '2016-08-23').order_by(Measurement.date)
+    temperature = session.query(Measurement.station,Measurement.date,Measurement.tobs).filter(Measurement.date >= '2016-08-23').order_by(Measurement.date).all()
 
     session.close()
 
@@ -107,42 +107,30 @@ def start(start=None):
     '''
     # Query all Stations table
     session = Session(engine)
-    results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
+    start_results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).group_by(Measurement.date).all()
 
     # close the session to end the communication with the database
+    
+    start_results_list = list (start_results)
+    return jsonify(results_list)
     session.close()
-
-    list = []
-    for i in results:
-        dict = {}
-        dict["min"] = i[0]
-        dict["avg"] = i[1]
-        dict["max"] = i[2]
-        list.append(dict)
-        
-    return jsonify(list)
-
+    
 @app.route("/api/v1.0/<start>/<end>")
-def startend(start=None, end=None):
+def start_end(start=None, end=None):
     '''
     Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
     When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
     '''
     # Query all Stations table
     session = Session(engine)
-    results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()
+    start_end_results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).group_by(Measurement.date).all()
 
+    start_end_results_list = list (start_end_results)
+    return jsonify(start_end_results_list)
     session.close()
 
-    list = []
-    for i in results:
-        dict = {}
-        dict["min"] = i[0]
-        dict["avg"] = i[1]
-        dict["max"] = i[2]
-        list.append(dict)
         
-    return jsonify(list)
+    
 
 if __name__ == '__main__':
     app.run(debug=True)
